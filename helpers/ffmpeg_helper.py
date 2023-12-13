@@ -128,33 +128,15 @@ def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     muxcmd = []
     muxcmd.append("ffmpeg")
     muxcmd.append("-hide_banner")
-    videoData = ffmpeg.probe(filename=filePath)
-    videoStreamsData = videoData.get("streams")
-    subTrack = 0
-    for i in range(len(videoStreamsData)):
-        if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += 1
-    for i in file_list:
-        muxcmd.append("-i")
-        muxcmd.append(i)
-    muxcmd.append("-map")
-    muxcmd.append("0:v:0")
-    muxcmd.append("-map")
-    muxcmd.append("0:a:?")
-    muxcmd.append("-map")
-    muxcmd.append("0:s:?")
-    for j in range(1, (len(file_list))):
-        muxcmd.append("-map")
-        muxcmd.append(f"{j}:s")
-        muxcmd.append(f"-metadata:s:s:{subTrack}")
-        muxcmd.append(f"title=Track {subTrack+1}")
-        subTrack += 1
+    muxcmd.append("-i")
+    muxcmd.append(filePath)
+    muxcmd.append("-vf")
+    muxcmd.append(f"subtitles={subPath}")
     muxcmd.append("-c:v")
-    muxcmd.append("copy")
+    muxcmd.append("libx264")
     muxcmd.append("-c:a")
     muxcmd.append("copy")
-    muxcmd.append("-c:s")
-    muxcmd.append("srt")
+    muxcmd.append("-sn")
     muxcmd.append(f"./downloads/{str(user_id)}/edited.mkv")
     LOGGER.info("Sub muxing")
     subprocess.call(muxcmd)
